@@ -1,0 +1,16 @@
+[
+{
+  "modid": "mosquitoes",
+  "name": "Mosquitoes",
+  "description": "Adds mosquitoes and ticks to Minecraft.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["vemerion"],
+  "credits": "",
+  "logoFile": "logo.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]

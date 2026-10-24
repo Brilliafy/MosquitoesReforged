@@ -1,30 +1,38 @@
 package mod.vemerion.mosquitoes.network;
 
-import java.util.function.Supplier;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkEvent;
-
-public class SpawnMosquitoesMessage {
+public class SpawnMosquitoesMessage implements IMessage {
 	private int count;
+
+	public SpawnMosquitoesMessage() {
+	}
 
 	public SpawnMosquitoesMessage(int count) {
 		this.count = count;
 	}
 
-	public static void encode(final SpawnMosquitoesMessage msg, final PacketBuffer buffer) {
-		buffer.writeInt(msg.count);
+	@Override
+	public void fromBytes(ByteBuf buf) {
+		this.count = buf.readInt();
 	}
 
-	public static SpawnMosquitoesMessage decode(final PacketBuffer buffer) {
-		return new SpawnMosquitoesMessage(buffer.readInt());
+	@Override
+	public void toBytes(ByteBuf buf) {
+		buf.writeInt(count);
 	}
 
-	public static void handle(final SpawnMosquitoesMessage msg, final Supplier<NetworkEvent.Context> supplier) {
-		final NetworkEvent.Context context = supplier.get();
-		context.setPacketHandled(true);
-		context.enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientOnlyMethods.spawnMosquitoes(msg.count)));
+	public static class Handler implements IMessageHandler<SpawnMosquitoesMessage, IMessage> {
+		@Override
+		public IMessage onMessage(SpawnMosquitoesMessage message, MessageContext ctx) {
+			Minecraft.getMinecraft().addScheduledTask(() -> {
+				ClientOnlyMethods.spawnMosquitoes(message.count);
+			});
+			return null;
+		}
 	}
 }

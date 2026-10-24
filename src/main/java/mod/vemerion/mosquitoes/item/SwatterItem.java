@@ -1,46 +1,70 @@
 package mod.vemerion.mosquitoes.item;
 
 import mod.vemerion.mosquitoes.Main;
-import mod.vemerion.mosquitoes.mosquito.Mosquitoes;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 
 public class SwatterItem extends Item {
 	private static final int LONG_TIME = 20 * 60 * 60;
 
 	public SwatterItem() {
-		super(new Item.Properties().group(ItemGroup.TOOLS).maxDamage(16));
+		setMaxDamage(16);
+		setMaxStackSize(1);
+		setCreativeTab(Main.TAB_MOSQUITOES);
+		setTranslationKey(Main.MODID + ".swatter_item");
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack) {
+	public int getMaxItemUseDuration(ItemStack stack) {
 		return LONG_TIME;
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
+	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
 		ItemStack itemstack = playerIn.getHeldItem(handIn);
 		playerIn.setActiveHand(handIn);
-		return ActionResult.resultSuccess(itemstack);
+		return new ActionResult<>(EnumActionResult.SUCCESS, itemstack);
 	}
 
 	@Override
-	public void onUse(World worldIn, LivingEntity livingEntityIn, ItemStack stack, int count) {		
-		if (!worldIn.isRemote && livingEntityIn instanceof PlayerEntity) {
-			PlayerEntity player = (PlayerEntity) livingEntityIn;
-			Mosquitoes mosquitoes = player.getCapability(Main.MOSQUITOES_CAP).orElse(new Mosquitoes());
-			if (player.getRNG().nextDouble() < 0.15 && mosquitoes.killRandomMosquito(player)) {
-				stack.damageItem(1, player, (p) -> {
-					p.sendBreakAnimation(EquipmentSlotType.MAINHAND);
-				});
+	public void onUsingTick(ItemStack stack, EntityLivingBase entityLiving, int count) {
+		if (entityLiving instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer) entityLiving;
+			World world = player.world;
+			if (!world.isRemote) {
+				double reach = 3.0D;
+				java.util.List<mod.vemerion.mosquitoes.entity.EntityMosquito> mosquitoes = world.getEntitiesWithinAABB(
+						mod.vemerion.mosquitoes.entity.EntityMosquito.class,
+						player.getEntityBoundingBox().grow(reach, reach, reach));
+				for (mod.vemerion.mosquitoes.entity.EntityMosquito mosquito : mosquitoes) {
+					if (mosquito.isEntityAlive() && player.getDistanceSq(mosquito) <= (reach * reach)) {
+						mosquito.attackEntityFrom(net.minecraft.util.DamageSource.causePlayerDamage(player), 10.0F);
+						stack.damageItem(1, player);
+						player.swingArm(player.getActiveHand());
+						break;
+					}
+				}
 			}
 		}
+	}
+
+	@Override
+	public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker) {
+		stack.damageItem(1, attacker);
+		if (attacker != null && !attacker.world.isRemote && target != null) {
+			if (!(target instanceof mod.vemerion.mosquitoes.entity.EntityMosquito)
+					&& !(target instanceof mod.vemerion.mosquitoes.entity.EntityTick)) {
+				attacker.world.playSound(null, target.posX, target.posY, target.posZ, Main.SMACK_SOUND,
+						net.minecraft.util.SoundCategory.PLAYERS, 1.0F, 1.0F);
+			}
+		}
+		return true;
 	}
 }

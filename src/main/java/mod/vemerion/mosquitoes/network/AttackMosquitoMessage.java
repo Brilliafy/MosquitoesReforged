@@ -1,33 +1,42 @@
 package mod.vemerion.mosquitoes.network;
 
-import java.util.function.Supplier;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkEvent;
-
-public class AttackMosquitoMessage {
+public class AttackMosquitoMessage implements IMessage {
 	private int id;
 	private boolean kill;
+
+	public AttackMosquitoMessage() {
+	}
 
 	public AttackMosquitoMessage(int id, boolean kill) {
 		this.id = id;
 		this.kill = kill;
 	}
 
-	public static void encode(final AttackMosquitoMessage msg, final PacketBuffer buffer) {
-		buffer.writeInt(msg.id);
-		buffer.writeBoolean(msg.kill);
+	@Override
+	public void fromBytes(ByteBuf buf) {
+		this.id = buf.readInt();
+		this.kill = buf.readBoolean();
 	}
 
-	public static AttackMosquitoMessage decode(final PacketBuffer buffer) {
-		return new AttackMosquitoMessage(buffer.readInt(), buffer.readBoolean());
+	@Override
+	public void toBytes(ByteBuf buf) {
+		buf.writeInt(id);
+		buf.writeBoolean(kill);
 	}
 
-	public static void handle(final AttackMosquitoMessage msg, final Supplier<NetworkEvent.Context> supplier) {
-		final NetworkEvent.Context context = supplier.get();
-		context.setPacketHandled(true);
-		context.enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, () ->  ClientOnlyMethods.attackMosquito(msg.id, msg.kill)));
+	public static class Handler implements IMessageHandler<AttackMosquitoMessage, IMessage> {
+		@Override
+		public IMessage onMessage(AttackMosquitoMessage message, MessageContext ctx) {
+			Minecraft.getMinecraft().addScheduledTask(() -> {
+				ClientOnlyMethods.attackMosquito(message.id, message.kill);
+			});
+			return null;
+		}
 	}
 }

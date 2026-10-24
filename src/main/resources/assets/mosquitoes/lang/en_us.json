@@ -1,7 +1,16 @@
 {
-  "item.mosquitoes.swatter_item": "Swatter",
+  "itemGroup.mosquitoes": "Mosquitoes",
+  "item.mosquitoes.swatter_item": "Mosquito Swatter",
   "item.mosquitoes.mosquito_wing_item": "Mosquito Wing",
-  "item.mosquitoes.tweezers_item": "Tweezers",
+  "item.mosquitoes.tweezers_item": "Tick Tweezers",
+  "tile.mosquitoes.citronella_block.name": "Citronella Block",
+  "block.mosquitoes.citronella_block": "Citronella Block",
+  "entity.mosquito.name": "Mosquito",
+  "entity.tick.name": "Tick",
+  "entity.mosquitoes.mosquito.name": "Mosquito",
+  "entity.mosquitoes.tick.name": "Tick",
+  "entity.mosquitoes:mosquito.name": "Mosquito",
+  "entity.mosquitoes:tick.name": "Tick",
   "effect.mosquitoes.malaria_effect": "Malaria",
   "effect.mosquitoes.malaria_cure_effect": "Malaria Cure",
   "item.minecraft.potion.effect.malaria_cure_potion": "Malaria Cure Potion",
@@ -11,6 +20,5 @@
   "item.minecraft.potion.effect.citronella_potion": "Citronella Oil Potion",
   "item.minecraft.splash_potion.effect.citronella_potion": "Citronella Oil Splash Potion",
   "item.minecraft.lingering_potion.effect.citronella_potion": "Citronella Oil Lingering Potion",
-  "block.mosquitoes.citronella_block": "Citronella",
   "death.attack.sucking": "%1$s was sucked to death"
 }

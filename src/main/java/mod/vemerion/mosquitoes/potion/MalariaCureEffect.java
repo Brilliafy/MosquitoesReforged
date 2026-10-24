@@ -1,24 +1,30 @@
 package mod.vemerion.mosquitoes.potion;
 
+import javax.annotation.Nullable;
+
 import mod.vemerion.mosquitoes.Main;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectType;
-import net.minecraft.potion.PotionUtils;
-import net.minecraftforge.common.brewing.BrewingRecipe;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class MalariaCureEffect extends Effect {
+public class MalariaCureEffect extends Potion {
 
-	public MalariaCureEffect(EffectType typeIn, int liquidColorIn) {
-		super(typeIn, liquidColorIn);
+	private static final ResourceLocation ICON = new ResourceLocation(Main.MODID, "textures/mob_effect/malaria_cure_effect.png");
+
+	public MalariaCureEffect() {
+		super(false, 0x00FFAC);
+		setPotionName("effect." + Main.MODID + ".malaria_cure_effect");
 	}
 
 	@Override
-	public void affectEntity(Entity source, Entity indirectSource, LivingEntity entityLivingBaseIn, int amplifier,
-			double health) {
+	public void affectEntity(@Nullable Entity source, @Nullable Entity indirectSource, EntityLivingBase entityLivingBaseIn,
+			int amplifier, double health) {
 		entityLivingBaseIn.removePotionEffect(Main.MALARIA_EFFECT);
 	}
 
@@ -27,19 +33,17 @@ public class MalariaCureEffect extends Effect {
 		return true;
 	}
 
-	public static class ModBrewingRecipe extends BrewingRecipe {
-		private ItemStack inputStack;
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void renderInventoryEffect(int x, int y, PotionEffect effect, Minecraft mc) {
+		mc.getTextureManager().bindTexture(ICON);
+		Gui.drawModalRectWithCustomSizedTexture(x + 6, y + 7, 0, 0, 18, 18, 18, 18);
+	}
 
-		public ModBrewingRecipe(ItemStack inputStack, Ingredient ingredient, ItemStack output) {
-			super(Ingredient.fromStacks(inputStack), ingredient, output);
-			this.inputStack = inputStack;
-		}
-
-		@Override
-		public boolean isInput(ItemStack stack) {
-			return super.isInput(stack)
-					&& PotionUtils.getPotionFromItem(stack) == PotionUtils.getPotionFromItem(inputStack);
-		}
-
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void renderHUDEffect(int x, int y, PotionEffect effect, Minecraft mc, float alpha) {
+		mc.getTextureManager().bindTexture(ICON);
+		Gui.drawModalRectWithCustomSizedTexture(x + 3, y + 3, 0, 0, 18, 18, 18, 18);
 	}
 }

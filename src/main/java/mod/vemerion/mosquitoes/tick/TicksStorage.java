@@ -1,22 +1,21 @@
 package mod.vemerion.mosquitoes.tick;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.Capability.IStorage;
 
-public class TicksStorage implements IStorage<Ticks> {
+public class TicksStorage implements Capability.IStorage<Ticks> {
 
 	@Override
-	public INBT writeNBT(Capability<Ticks> capability, Ticks instance, Direction side) {
+	public NBTBase writeNBT(Capability<Ticks> capability, Ticks instance, EnumFacing side) {
 		return instance.save();
-
 	}
 
 	@Override
-	public void readNBT(Capability<Ticks> capability, Ticks instance, Direction side, INBT nbt) {
-		if (nbt instanceof CompoundNBT)
-			instance.load((CompoundNBT) nbt);
+	public void readNBT(Capability<Ticks> capability, Ticks instance, EnumFacing side, NBTBase nbt) {
+		if (nbt instanceof NBTTagCompound) {
+			instance.load((NBTTagCompound) nbt);
+		}
 	}
 }

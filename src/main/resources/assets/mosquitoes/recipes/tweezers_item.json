@@ -5,15 +5,12 @@
     "i i",
     "iii"
   ],
-  "key":
-  {
-    "i":
-    {
-      "tag": "forge:ingots/iron"
+  "key": {
+    "i": {
+      "item": "minecraft:iron_ingot"
     }
   },
-  "result":
-  {
+  "result": {
     "item": "mosquitoes:tweezers_item"
   }
 }

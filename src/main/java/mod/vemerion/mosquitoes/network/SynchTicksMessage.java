@@ -1,31 +1,40 @@
 package mod.vemerion.mosquitoes.network;
 
-import java.util.function.Supplier;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkEvent;
+public class SynchTicksMessage implements IMessage {
+	private NBTTagCompound compound;
 
-public class SynchTicksMessage {
-	private CompoundNBT compound;
-	
-	public SynchTicksMessage(CompoundNBT compound) {
+	public SynchTicksMessage() {
+	}
+
+	public SynchTicksMessage(NBTTagCompound compound) {
 		this.compound = compound;
 	}
 
-	public static void encode(final SynchTicksMessage msg, final PacketBuffer buffer) {
-		buffer.writeCompoundTag(msg.compound);
+	@Override
+	public void fromBytes(ByteBuf buf) {
+		this.compound = ByteBufUtils.readTag(buf);
 	}
 
-	public static SynchTicksMessage decode(final PacketBuffer buffer) {
-		return new SynchTicksMessage(buffer.readCompoundTag());
+	@Override
+	public void toBytes(ByteBuf buf) {
+		ByteBufUtils.writeTag(buf, compound);
 	}
 
-	public static void handle(final SynchTicksMessage msg, final Supplier<NetworkEvent.Context> supplier) {
-		final NetworkEvent.Context context = supplier.get();
-		context.setPacketHandled(true);
-		context.enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientOnlyMethods.synchTicks(msg.compound)));
+	public static class Handler implements IMessageHandler<SynchTicksMessage, IMessage> {
+		@Override
+		public IMessage onMessage(SynchTicksMessage message, MessageContext ctx) {
+			Minecraft.getMinecraft().addScheduledTask(() -> {
+				ClientOnlyMethods.synchTicks(message.compound);
+			});
+			return null;
+		}
 	}
 }

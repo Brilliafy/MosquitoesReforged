@@ -4,95 +4,73 @@ import java.util.Random;
 
 import mod.vemerion.mosquitoes.Main;
 import mod.vemerion.mosquitoes.mosquito.Mosquitoes;
+import mod.vemerion.mosquitoes.particle.MosquitoParticle;
 import mod.vemerion.mosquitoes.tick.Ticks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraftforge.fml.DistExecutor;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class ClientOnlyMethods {
 
-	public static DistExecutor.SafeRunnable attackMosquito(int id, boolean kill) {
-		return new DistExecutor.SafeRunnable() {
-			private static final long serialVersionUID = 1L;
+	public static void attackMosquito(int id, boolean kill) {
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		if (player == null)
+			return;
+		Random rand = player.getRNG();
+		Mosquitoes mosquitoes = Mosquitoes.getMosquitoes(player);
 
-			@Override
-			public void run() {
-				ClientPlayerEntity player = Minecraft.getInstance().player;
-				Random rand = player.getRNG();
-				Mosquitoes mosquitoes = player.getCapability(Main.MOSQUITOES_CAP).orElse(new Mosquitoes());
-
-				if (kill && mosquitoes.killMosquitoClient(id)) {
-					player.playSound(Main.SPLASH_SOUND, 1f, 0.8f + rand.nextFloat() * 0.4f);
-					Vector3d direction = Vector3d.fromPitchYaw(player.getPitchYaw());
-					Vector3d right = direction.rotateYaw(-90);
-					Vector3d center = player.getPositionVec().add(direction.x * 0.6, 1.6 + direction.y * 0.6,
-							direction.z * 0.6);
-					for (int i = 0; i < 15; i++) {
-						Vector3d position = center.add(right.x * (rand.nextDouble() * 1.5 - 0.75),
-								rand.nextDouble() * 1.5 - 0.75, right.z * (rand.nextDouble() * 1.5 - 0.75));
-						player.world.addParticle(Main.MOSQUITO_PARTICLE_TYPE, position.x, position.y, position.z, 0, 0,
-								0);
-					}
-				} else {
-					mosquitoes.chaseAwayMosquitoClient(id);
-				}
+		if (kill && mosquitoes.killMosquitoClient(id)) {
+			player.world.playSound(player.posX, player.posY, player.posZ, Main.SPLASH_SOUND,
+					SoundCategory.PLAYERS, 1.0f, 0.8f + rand.nextFloat() * 0.4f, false);
+			Vec3d look = player.getLookVec();
+			// vector perpendicular to look on horizontal plane
+			Vec3d right = new Vec3d(-look.z, 0, look.x).normalize();
+			Vec3d center = new Vec3d(player.posX + look.x * 0.6, player.posY + player.getEyeHeight() + look.y * 0.6,
+					player.posZ + look.z * 0.6);
+			for (int i = 0; i < 15; i++) {
+				double px = center.x + right.x * (rand.nextDouble() * 0.8 - 0.4);
+				double py = center.y + rand.nextDouble() * 0.8 - 0.4;
+				double pz = center.z + right.z * (rand.nextDouble() * 0.8 - 0.4);
+				Minecraft.getMinecraft().effectRenderer.addEffect(new MosquitoParticle(player.world, px, py, pz, 0, 0, 0));
 			}
-		};
+		} else {
+			mosquitoes.chaseAwayMosquitoClient(id);
+		}
 	}
 
-	public static DistExecutor.SafeRunnable removeTick() {
-		return new DistExecutor.SafeRunnable() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void run() {
-				ClientPlayerEntity player = Minecraft.getInstance().player;
-				player.getCapability(Main.TICKS_CAP).orElse(new Ticks()).remove();
-			}
-		};
+	public static void removeTick() {
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		if (player != null) {
+			Ticks.getTicks(player).remove();
+		}
 	}
 
-	public static DistExecutor.SafeRunnable spawnMosquitoes(int count) {
-		return new DistExecutor.SafeRunnable() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void run() {
-				ClientPlayerEntity player = Minecraft.getInstance().player;
-				Mosquitoes mosquitoes = player.getCapability(Main.MOSQUITOES_CAP)
-						.orElseThrow(() -> new IllegalArgumentException("LazyOptional cannot be empty!"));
-				if (count > 0) {
-					mosquitoes.mosquitoArrives(count);
-				}
-			}
-		};
+	public static void spawnMosquitoes(int count) {
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		if (player != null && count > 0) {
+			Mosquitoes mosquitoes = Mosquitoes.getMosquitoes(player);
+			mosquitoes.mosquitoArrives(count);
+		}
 	}
 
-	public static DistExecutor.SafeRunnable synchMosquitoes(CompoundNBT compound) {
-		return new DistExecutor.SafeRunnable() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void run() {
-				ClientPlayerEntity player = Minecraft.getInstance().player;
-				Mosquitoes mosquitoes = player.getCapability(Main.MOSQUITOES_CAP).orElse(new Mosquitoes());
-				mosquitoes.load(compound);
-			}
-		};
+	public static void synchMosquitoes(NBTTagCompound compound) {
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		if (player != null && compound != null) {
+			Mosquitoes mosquitoes = Mosquitoes.getMosquitoes(player);
+			mosquitoes.load(compound);
+		}
 	}
 
-	public static DistExecutor.SafeRunnable synchTicks(CompoundNBT compound) {
-		return new DistExecutor.SafeRunnable() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void run() {
-				ClientPlayerEntity player = Minecraft.getInstance().player;
-				Ticks ticks = player.getCapability(Main.TICKS_CAP).orElse(new Ticks());
-				ticks.load(compound);
-			}
-		};
+	public static void synchTicks(NBTTagCompound compound) {
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		if (player != null && compound != null) {
+			Ticks ticks = Ticks.getTicks(player);
+			ticks.load(compound);
+		}
 	}
 }
