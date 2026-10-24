@@ -1,27 +1,33 @@
 package mod.vemerion.mosquitoes.network;
 
-import java.util.function.Supplier;
-
+import io.netty.buffer.ByteBuf;
 import mod.vemerion.mosquitoes.mosquito.Mosquitoes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class WavingMessage {
+public class WavingMessage implements IMessage {
 
-	public static void encode(final WavingMessage msg, final PacketBuffer buffer) {
+	public WavingMessage() {
 	}
 
-	public static WavingMessage decode(final PacketBuffer buffer) {
-		return new WavingMessage();
+	@Override
+	public void fromBytes(ByteBuf buf) {
 	}
 
-	public static void handle(final WavingMessage msg, final Supplier<NetworkEvent.Context> supplier) {
-		final NetworkEvent.Context context = supplier.get();
-		context.setPacketHandled(true);
-		context.enqueueWork(() -> {
-			PlayerEntity player = context.getSender();
-			Mosquitoes.getMosquitoes(player).chaseAwayRandomMosquito(player);
-		});
+	@Override
+	public void toBytes(ByteBuf buf) {
+	}
+
+	public static class Handler implements IMessageHandler<WavingMessage, IMessage> {
+		@Override
+		public IMessage onMessage(WavingMessage message, MessageContext ctx) {
+			EntityPlayerMP player = ctx.getServerHandler().player;
+			player.getServerWorld().addScheduledTask(() -> {
+				Mosquitoes.getMosquitoes(player).chaseAwayRandomMosquito(player);
+			});
+			return null;
+		}
 	}
 }

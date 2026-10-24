@@ -1,6 +1,7 @@
 {
   "flying_mosquito_sound": {
     "category": "hostile",
+    "subtitle": "subtitles.mosquitoes.flying_mosquito_sound",
     "sounds": [
       {
         "name": "mosquitoes:flying_mosquito_sound0",
@@ -20,8 +21,49 @@
       }
     ]
   },
+  "flying_mosquito_sound0": {
+    "category": "hostile",
+    "subtitle": "subtitles.mosquitoes.flying_mosquito_sound",
+    "sounds": [
+      {
+        "name": "mosquitoes:flying_mosquito_sound0",
+        "stream": false
+      }
+    ]
+  },
+  "flying_mosquito_sound1": {
+    "category": "hostile",
+    "subtitle": "subtitles.mosquitoes.flying_mosquito_sound",
+    "sounds": [
+      {
+        "name": "mosquitoes:flying_mosquito_sound1",
+        "stream": false
+      }
+    ]
+  },
+  "flying_mosquito_sound2": {
+    "category": "hostile",
+    "subtitle": "subtitles.mosquitoes.flying_mosquito_sound",
+    "sounds": [
+      {
+        "name": "mosquitoes:flying_mosquito_sound2",
+        "stream": false
+      }
+    ]
+  },
+  "flying_mosquito_sound3": {
+    "category": "hostile",
+    "subtitle": "subtitles.mosquitoes.flying_mosquito_sound",
+    "sounds": [
+      {
+        "name": "mosquitoes:flying_mosquito_sound3",
+        "stream": false
+      }
+    ]
+  },
   "gulp_sound": {
     "category": "hostile",
+    "subtitle": "subtitles.mosquitoes.gulp_sound",
     "sounds": [
       {
         "name": "mosquitoes:gulp_sound",
@@ -31,6 +73,7 @@
   },
   "smack_sound": {
     "category": "player",
+    "subtitle": "subtitles.mosquitoes.smack_sound",
     "sounds": [
       {
         "name": "mosquitoes:smack_sound",
@@ -40,6 +83,7 @@
   },
   "splash_sound": {
     "category": "hostile",
+    "subtitle": "subtitles.mosquitoes.splash_sound",
     "sounds": [
       {
         "name": "mosquitoes:splash_sound",
@@ -49,6 +93,7 @@
   },
   "tear_sound": {
     "category": "player",
+    "subtitle": "subtitles.mosquitoes.tear_sound",
     "sounds": [
       {
         "name": "mosquitoes:tear_sound",

@@ -3,13 +3,21 @@ package mod.vemerion.mosquitoes.mosquito;
 import java.util.Random;
 
 import mod.vemerion.mosquitoes.Main;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.potion.EffectInstance;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
 
 public class Mosquito {
+	// Super small scale (2x smaller)
+	public static final float SCALE = 0.0075f;
+	// Pixel-perfect hit threshold (squared distance in camera coordinate space)
+	public static final float HIT_RADIUS_SQ = 0.0008f;
+
 	private float x, y, prevX, prevY, targetX, targetY, rotation, legRotation, prevLegRotation;
+	private float dartX, dartY;
+	private float prevPlayerYaw, prevPlayerPitch;
+	private boolean hasPrevPlayerAngles;
 	private int ticksExisted;
 	private Random rand;
 	private int id;
@@ -38,7 +46,6 @@ public class Mosquito {
 		if (ticksExisted > startsLeavingAfter()) {
 			targetX = randomXPosOutside();
 			targetY = randomYPosOutside();
-
 		}
 	}
 
@@ -46,7 +53,7 @@ public class Mosquito {
 		this(rand, id, 0);
 	}
 
-	public void tick(PlayerEntity player) {
+	public void tick(EntityPlayer player) {
 		ticksExisted++;
 
 		if (player.world.isRemote) {
@@ -54,19 +61,67 @@ public class Mosquito {
 			prevY = y;
 			prevLegRotation = legRotation;
 
-			if (isArriving()) {
-				Vector3d direction = direction();
-				x += direction.x;
-				y += direction.y;
+			// Respond to player camera turning so crosshair aiming works naturally
+			if (hasPrevPlayerAngles) {
+				float yawDiff = player.rotationYaw - prevPlayerYaw;
+				float pitchDiff = player.rotationPitch - prevPlayerPitch;
+				// Wrap yawDiff to [-180, 180]
+				yawDiff = MathHelper.wrapDegrees(yawDiff);
+				x -= yawDiff * 0.009f;
+				y -= pitchDiff * 0.009f;
+			} else {
+				hasPrevPlayerAngles = true;
+			}
+			prevPlayerYaw = player.rotationYaw;
+			prevPlayerPitch = player.rotationPitch;
 
-				if (rand.nextDouble() < 0.05) {
+			if (isArriving()) {
+				// Frequent erratic target changes
+				if (rand.nextDouble() < 0.15) {
 					targetX = randomXPos();
 					targetY = randomYPos();
 				}
+
+				// Sudden erratic darting impulses
+				if (rand.nextInt(4) == 0) {
+					dartX = (rand.nextFloat() - 0.5f) * 0.05f;
+					dartY = (rand.nextFloat() - 0.5f) * 0.05f;
+				}
+				dartX *= 0.75f;
+				dartY *= 0.75f;
+
+				// High-speed pursuit
+				float dx = targetX - x;
+				float dy = targetY - y;
+				float dist = (float) Math.sqrt(dx * dx + dy * dy);
+				float speed = dist < 0.001f ? 0.01f : dist < 0.15f ? 0.04f + 0.03f * (dist / 0.15f) : 0.075f;
+				if (dist > 0.0001f) {
+					x += (dx / dist) * speed;
+					y += (dy / dist) * speed;
+				}
+
+				// Noisy, high-frequency chaotic pattern
+				float noiseX = (float) (Math.sin(ticksExisted * 0.85f + id * 13.0f) * 0.016f
+						+ Math.cos(ticksExisted * 2.1f + id * 29.0f) * 0.020f);
+				float noiseY = (float) (Math.cos(ticksExisted * 0.95f + id * 19.0f) * 0.016f
+						+ Math.sin(ticksExisted * 2.3f + id * 37.0f) * 0.020f);
+
+				x += noiseX + dartX;
+				y += noiseY + dartY;
+
+				// Clamp to general viewing frustum when flying in front of face
+				x = MathHelper.clamp(x, -0.32f, 0.32f);
+				y = MathHelper.clamp(y, -0.22f, 0.22f);
+
 			} else if (isLeaving()) {
-				Vector3d direction = direction();
-				x += direction.x;
-				y += direction.y;
+				float dx = targetX - x;
+				float dy = targetY - y;
+				float dist = (float) Math.sqrt(dx * dx + dy * dy);
+				float speed = 0.08f;
+				if (dist > 0.0001f) {
+					x += (dx / dist) * speed;
+					y += (dy / dist) * speed;
+				}
 
 				if (ticksExisted() - 1 == startsLeavingAfter()) {
 					targetX = randomXPosOutside();
@@ -75,30 +130,36 @@ public class Mosquito {
 			}
 
 			if (prevX < x) {
-				legRotation = (float) MathHelper.lerp(0.15, legRotation, 20);
+				legRotation = (float) MathHelper.clampedLerp(legRotation, 20, 0.15);
 			} else {
-				legRotation = (float) MathHelper.lerp(0.15, legRotation, -20);
+				legRotation = (float) MathHelper.clampedLerp(legRotation, -20, 0.15);
 			}
 
 		} else {
 			if (isSucking() && hasMalaria()) {
-				if (rand.nextDouble() < 0.003 && !player.isPotionActive(Main.MALARIA_EFFECT)) {
-					player.addPotionEffect(new EffectInstance(Main.MALARIA_EFFECT, 20 * 60 * 50));
+				int armorCount = 0;
+				for (ItemStack armor : player.inventory.armorInventory) {
+					if (!armor.isEmpty()) {
+						armorCount++;
+					}
+				}
+				// 0.8x less likely per armor piece worn, max 3.2x with full armor set
+				double biteChance = 1.0D / (1.0D + armorCount * 0.55D);
+				if (rand.nextDouble() < (0.003D * biteChance) && !player.isPotionActive(Main.MALARIA_EFFECT)) {
+					player.addPotionEffect(new PotionEffect(Main.MALARIA_EFFECT, 20 * 60 * 50));
 				}
 			}
 		}
 	}
 
-	private boolean hasMalaria() {
-		return id % 10 == 0;
+	public boolean isHit(float hitX, float hitY) {
+		float dx = x - hitX;
+		float dy = y - hitY;
+		return (dx * dx + dy * dy) < HIT_RADIUS_SQ;
 	}
 
-	private Vector3d direction() {
-		Vector3d pos = new Vector3d(x, y, 0);
-		Vector3d target = new Vector3d(targetX, targetY, 0);
-		double distance = target.squareDistanceTo(pos);
-		double speed = distance < 0.0001 ? 0 : distance < 0.17 ? 0.02 * (distance / 0.17) + 0.005 : 0.025;
-		return target.subtract(pos).normalize().scale(speed);
+	private boolean hasMalaria() {
+		return id % 10 == 0;
 	}
 
 	private float randomYPos() {
@@ -135,26 +196,26 @@ public class Mosquito {
 	}
 
 	public float getX(float partialTicks) {
-		return MathHelper.lerp(partialTicks, prevX, x);
+		return prevX + (x - prevX) * partialTicks;
 	}
 
 	public float getY(float partialTicks) {
-		return MathHelper.lerp(partialTicks, prevY, y);
+		return prevY + (y - prevY) * partialTicks;
 	}
 
 	public float getLegRotation(float partialTicks) {
-		return MathHelper.lerp(partialTicks, prevLegRotation, legRotation);
+		return prevLegRotation + (legRotation - prevLegRotation) * partialTicks;
 	}
 
 	public float getZ(float partialTicks) {
 		float ageInTicks = ticksExisted() + partialTicks;
 		double z = isArriving() ? -0.2 - MathHelper.clampedLerp(0.2, 0, ageInTicks / arrivingDuration())
-				: isLeaving() ? -0.2 : -0.2;
+				: -0.2;
 		return (float) z;
 	}
 
 	public float getScale(float partialTicks) {
-		return 0.06f;
+		return SCALE;
 	}
 
 	public float getRotationX() {

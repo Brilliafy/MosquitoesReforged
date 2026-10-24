@@ -2,21 +2,26 @@ package mod.vemerion.mosquitoes.tick;
 
 import java.util.Random;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
+import mod.vemerion.mosquitoes.Main;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.MobEffects;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.MathHelper;
 
 public class Tick {
 	private static final float SPEED = 0.00015f;
 	private static final int MAX_DISEASE_TIMER = 20 * 60 * 3;
-	
+	private static final DamageSource SUCKING = new DamageSource("sucking").setDamageBypassesArmor();
+
 	private float x, y, targetX, targetY, direction, bellySize, prevBellySize, prevX, prevY;
 	private int ticksExisted;
 	private int diseaseTimer;
+	private int suckCooldown;
 	Random rand;
-	
+
 	public Tick() {
 		this.rand = new Random();
 		this.x = randomXPosOutside();
@@ -29,9 +34,10 @@ public class Tick {
 		this.bellySize = 1;
 		this.prevBellySize = bellySize;
 		this.diseaseTimer = MAX_DISEASE_TIMER;
+		this.suckCooldown = 80;
 	}
 
-	public void load(CompoundNBT compound) {
+	public void load(NBTTagCompound compound) {
 		x = compound.getFloat("x");
 		y = compound.getFloat("y");
 		this.prevX = x;
@@ -41,61 +47,71 @@ public class Tick {
 		direction = compound.getFloat("direction");
 		bellySize = compound.getFloat("bellySize");
 		prevBellySize = bellySize;
-		ticksExisted = compound.getInt("ticksExisted");
+		ticksExisted = compound.getInteger("ticksExisted");
+		suckCooldown = compound.hasKey("suckCooldown") ? compound.getInteger("suckCooldown") : 80;
 	}
 
-	public void save(CompoundNBT compound) {
-		compound.putFloat("x", x);
-		compound.putFloat("y", y);
-		compound.putFloat("targetX", targetX);
-		compound.putFloat("targetY", targetY);
-		compound.putFloat("direction", direction);
-		compound.putFloat("bellySize", bellySize);
-		compound.putInt("ticksExisted", ticksExisted);
+	public void save(NBTTagCompound compound) {
+		compound.setFloat("x", x);
+		compound.setFloat("y", y);
+		compound.setFloat("targetX", targetX);
+		compound.setFloat("targetY", targetY);
+		compound.setFloat("direction", direction);
+		compound.setFloat("bellySize", bellySize);
+		compound.setInteger("ticksExisted", ticksExisted);
+		compound.setInteger("suckCooldown", suckCooldown);
 	}
-	
+
 	public int ticksExisted() {
 		return ticksExisted;
 	}
 
-	// The tick is ticking
-	public void tick(PlayerEntity player) {
+	public void tick(EntityPlayer player) {
 		ticksExisted++;
 		prevX = x;
 		prevY = y;
 		prevBellySize = bellySize;
-		
+
 		if (isMoving()) {
 			x += MathHelper.cos(direction) * SPEED;
 			y += MathHelper.sin(direction) * SPEED;
 		} else {
-			bellySize += 0.0001;
-			
+			// Actively drinking blood
+			bellySize += 0.00015f;
+
 			if (!player.world.isRemote) {
+				suckCooldown--;
+				if (suckCooldown <= 0) {
+					suckCooldown = 160; // Drinks blood every 8 seconds
+					player.attackEntityFrom(SUCKING, 1.0F);
+					player.world.playSound(null, player.posX, player.posY, player.posZ, Main.GULP_SOUND,
+							SoundCategory.PLAYERS, 0.8F, 0.8F + rand.nextFloat() * 0.4F);
+				}
+
 				if (diseaseTimer-- < 0) {
 					diseaseTimer = MAX_DISEASE_TIMER;
-					player.addPotionEffect(new EffectInstance(Effects.HUNGER, 20 * 40));
+					player.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 20 * 40));
 				}
 			}
 		}
 	}
-	
+
 	public float getX(float partialTicks) {
-		return MathHelper.lerp(partialTicks, prevX, x);
+		return prevX + (x - prevX) * partialTicks;
 	}
-	
+
 	public float getY(float partialTicks) {
-		return MathHelper.lerp(partialTicks, prevY, y);
+		return prevY + (y - prevY) * partialTicks;
 	}
-	
+
 	public float getBellySize(float partialTicks) {
-		return MathHelper.lerp(partialTicks, prevBellySize, bellySize);
+		return prevBellySize + (bellySize - prevBellySize) * partialTicks;
 	}
-	
+
 	public float getDirection() {
 		return (float) Math.toDegrees(direction) - 90;
 	}
-	
+
 	private float randomYPos() {
 		return rand.nextFloat() * 0.05f - 0.025f;
 	}

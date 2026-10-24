@@ -1,106 +1,130 @@
 package mod.vemerion.mosquitoes.tick;
 
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
 import mod.vemerion.mosquitoes.Main;
+import mod.vemerion.mosquitoes.mosquito.Mosquitoes;
 import mod.vemerion.mosquitoes.network.Network;
 import mod.vemerion.mosquitoes.network.RemoveTickMessage;
 import mod.vemerion.mosquitoes.network.SynchTicksMessage;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 public class Ticks {
 
-	private static final Set<Block> SPAWN_POSITIONS = ImmutableSet.of(Blocks.TALL_GRASS, Blocks.GRASS);
-
+	private static final Set<Block> SPAWN_POSITIONS = ImmutableSet.of(Blocks.TALLGRASS, Blocks.GRASS);
 	private static final int MAX_SPAWN_TIMER = 20 * 60 * 15;
 
-	private Optional<Tick> tick;
+	private Tick tick;
 	private int spawnTimer;
 
 	public Ticks() {
-		tick = Optional.empty();
+		tick = null;
 		spawnTimer = MAX_SPAWN_TIMER;
 	}
 
-	public void tick(PlayerEntity player) {
-		tick.ifPresent((t) -> t.tick(player));
+	public void tick(EntityPlayer player) {
+		if (tick != null) {
+			tick.tick(player);
+		}
 
 		if (!player.world.isRemote) {
-			if (inGrass(player) && !tick.isPresent()) {
-				spawnTimer--;
-
-				if (spawnTimer < 0) {
-					spawnTimer = MAX_SPAWN_TIMER;
-					createTick(player);
+			// Overworld only (no Nether/End/modded dims), surface only (NOT IN CAVES!), non-cold biome, and lots of vegetation
+			if (player.world.provider.getDimension() == 0
+					&& player.world.provider.getDimensionType() == net.minecraft.world.DimensionType.OVERWORLD
+					&& Mosquitoes.isSurface(player)
+					&& inDenseVegetation(player)
+					&& tick == null) {
+				BlockPos pos = new BlockPos(player.posX, player.posY, player.posZ);
+				net.minecraft.world.biome.Biome biome = player.world.getBiome(pos);
+				if (Mosquitoes.isBiomeAllowed(biome) && !Mosquitoes.isColdBiome(biome)) {
+					spawnTimer--;
+					if (spawnTimer < 0) {
+						spawnTimer = MAX_SPAWN_TIMER;
+						// Armor check: 1.5x less likely per armor piece worn (~5x with full armor)
+						int armorCount = 0;
+						for (net.minecraft.item.ItemStack armor : player.inventory.armorInventory) {
+							if (!armor.isEmpty()) {
+								armorCount++;
+							}
+						}
+						double attachChance = 1.0D / Math.pow(1.5D, armorCount);
+						if (player.getRNG().nextDouble() < attachChance) {
+							createTick(player);
+						}
+					}
 				}
 			}
 		}
 	}
 
 	public boolean hasTick() {
-		return tick.isPresent();
+		return tick != null;
 	}
 
 	public Tick getTick() {
-		return tick.get();
+		return tick;
 	}
 
-	public CompoundNBT save() {
-		CompoundNBT compound = new CompoundNBT();
-		tick.ifPresent((t) -> t.save(compound));
-		compound.putBoolean("hasTick", tick.isPresent());
-		compound.putInt("spawnTimer", spawnTimer);
+	public NBTTagCompound save() {
+		NBTTagCompound compound = new NBTTagCompound();
+		if (tick != null) {
+			tick.save(compound);
+		}
+		compound.setBoolean("hasTick", tick != null);
+		compound.setInteger("spawnTimer", spawnTimer);
 		return compound;
 	}
 
-	public void load(CompoundNBT compound) {
+	public void load(NBTTagCompound compound) {
 		if (compound.getBoolean("hasTick")) {
-			tick = Optional.of(new Tick());
-			tick.get().load(compound);
+			tick = new Tick();
+			tick.load(compound);
+		} else {
+			tick = null;
 		}
-		spawnTimer = compound.getInt("spawnTimer");
+		spawnTimer = compound.getInteger("spawnTimer");
 	}
 
-	private void createTick(PlayerEntity player) {
-		tick = Optional.of(new Tick());
+	public void createTick(EntityPlayer player) {
+		tick = new Tick();
 		sendSyncMessage(player);
 	}
 
-	public void sendSyncMessage(PlayerEntity player) {
-		if (tick.isPresent()) {
-			Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-					new SynchTicksMessage(save()));
-		}
-	}
-	
-	public void sendRemoveMessage(PlayerEntity player) {
-		if (tick.isPresent()) {
-			tick = Optional.empty();
-			Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-					new RemoveTickMessage());
+	public void sendSyncMessage(EntityPlayer player) {
+		if (player instanceof EntityPlayerMP) {
+			Network.INSTANCE.sendTo(new SynchTicksMessage(save()), (EntityPlayerMP) player);
 		}
 	}
 
-	private boolean inGrass(PlayerEntity player) {
-		BlockPos pos = new BlockPos(player.getPositionVec());
-		return SPAWN_POSITIONS.contains(player.world.getBlockState(pos).getBlock())
-				|| SPAWN_POSITIONS.contains(player.world.getBlockState(pos.down()).getBlock());
+	public void sendRemoveMessage(EntityPlayer player) {
+		if (tick != null) {
+			tick = null;
+			if (player instanceof EntityPlayerMP) {
+				Network.INSTANCE.sendTo(new RemoveTickMessage(), (EntityPlayerMP) player);
+			}
+		}
 	}
 
-	public static Ticks getTicks(PlayerEntity player) {
-		return player.getCapability(Main.TICKS_CAP).orElse(new Ticks());
+	private boolean inDenseVegetation(EntityPlayer player) {
+		BlockPos pos = new BlockPos(player.posX, player.posY, player.posZ);
+		return mod.vemerion.mosquitoes.util.VegetationHelper.hasLotsOfVegetation(player.world, pos);
+	}
+
+	public static Ticks getTicks(EntityPlayer player) {
+		if (player.hasCapability(Main.TICKS_CAP, null)) {
+			return player.getCapability(Main.TICKS_CAP, null);
+		}
+		return new Ticks();
 	}
 
 	public void remove() {
-		tick = Optional.empty();
+		tick = null;
 	}
 }

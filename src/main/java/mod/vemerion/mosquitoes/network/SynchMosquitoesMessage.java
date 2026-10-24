@@ -1,31 +1,40 @@
 package mod.vemerion.mosquitoes.network;
 
-import java.util.function.Supplier;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkEvent;
+public class SynchMosquitoesMessage implements IMessage {
+	private NBTTagCompound compound;
 
-public class SynchMosquitoesMessage {
-	private CompoundNBT compound;
-	
-	public SynchMosquitoesMessage(CompoundNBT compound) {
+	public SynchMosquitoesMessage() {
+	}
+
+	public SynchMosquitoesMessage(NBTTagCompound compound) {
 		this.compound = compound;
 	}
 
-	public static void encode(final SynchMosquitoesMessage msg, final PacketBuffer buffer) {
-		buffer.writeCompoundTag(msg.compound);
+	@Override
+	public void fromBytes(ByteBuf buf) {
+		this.compound = ByteBufUtils.readTag(buf);
 	}
 
-	public static SynchMosquitoesMessage decode(final PacketBuffer buffer) {
-		return new SynchMosquitoesMessage(buffer.readCompoundTag());
+	@Override
+	public void toBytes(ByteBuf buf) {
+		ByteBufUtils.writeTag(buf, compound);
 	}
 
-	public static void handle(final SynchMosquitoesMessage msg, final Supplier<NetworkEvent.Context> supplier) {
-		final NetworkEvent.Context context = supplier.get();
-		context.setPacketHandled(true);
-		context.enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientOnlyMethods.synchMosquitoes(msg.compound)));
+	public static class Handler implements IMessageHandler<SynchMosquitoesMessage, IMessage> {
+		@Override
+		public IMessage onMessage(SynchMosquitoesMessage message, MessageContext ctx) {
+			Minecraft.getMinecraft().addScheduledTask(() -> {
+				ClientOnlyMethods.synchMosquitoes(message.compound);
+			});
+			return null;
+		}
 	}
 }

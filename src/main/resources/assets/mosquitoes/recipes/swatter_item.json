@@ -5,19 +5,15 @@
     "ccc",
     " s "
   ],
-  "key":
-  {
-    "s":
-    {
+  "key": {
+    "s": {
       "item": "minecraft:stick"
     },
-    "c":
-    {
-      "item": "minecraft:cobweb"
+    "c": {
+      "item": "minecraft:web"
     }
   },
-  "result":
-  {
+  "result": {
     "item": "mosquitoes:swatter_item"
   }
 }

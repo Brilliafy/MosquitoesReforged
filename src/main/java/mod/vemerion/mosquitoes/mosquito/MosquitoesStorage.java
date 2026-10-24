@@ -1,22 +1,21 @@
 package mod.vemerion.mosquitoes.mosquito;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.Capability.IStorage;
 
-public class MosquitoesStorage implements IStorage<Mosquitoes> {
+public class MosquitoesStorage implements Capability.IStorage<Mosquitoes> {
 
 	@Override
-	public INBT writeNBT(Capability<Mosquitoes> capability, Mosquitoes instance, Direction side) {
+	public NBTBase writeNBT(Capability<Mosquitoes> capability, Mosquitoes instance, EnumFacing side) {
 		return instance.save();
-
 	}
 
 	@Override
-	public void readNBT(Capability<Mosquitoes> capability, Mosquitoes instance, Direction side, INBT nbt) {
-		if (nbt instanceof CompoundNBT)
-			instance.load((CompoundNBT) nbt);
+	public void readNBT(Capability<Mosquitoes> capability, Mosquitoes instance, EnumFacing side, NBTBase nbt) {
+		if (nbt instanceof NBTTagCompound) {
+			instance.load((NBTTagCompound) nbt);
+		}
 	}
 }

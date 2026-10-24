@@ -1,29 +1,32 @@
 package mod.vemerion.mosquitoes.tick;
 
-
 import mod.vemerion.mosquitoes.Main;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.LazyOptional;
 
-public class TicksProvider implements ICapabilitySerializable<INBT>{
+public class TicksProvider implements ICapabilitySerializable<NBTTagCompound> {
 
-	private LazyOptional<Ticks> instance = LazyOptional.of(Main.TICKS_CAP::getDefaultInstance);
+	private final Ticks ticks = new Ticks();
 
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-		return Main.TICKS_CAP.orEmpty(cap, instance);
+	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		return capability == Main.TICKS_CAP;
 	}
 
 	@Override
-	public INBT serializeNBT() {
-		return Main.TICKS_CAP.getStorage().writeNBT(Main.TICKS_CAP, instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional cannot be empty!")), null);
+	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		return capability == Main.TICKS_CAP ? Main.TICKS_CAP.cast(ticks) : null;
 	}
 
 	@Override
-	public void deserializeNBT(INBT nbt) {
-		Main.TICKS_CAP.getStorage().readNBT(Main.TICKS_CAP, instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional cannot be empty!")), null, nbt);
+	public NBTTagCompound serializeNBT() {
+		return ticks.save();
+	}
+
+	@Override
+	public void deserializeNBT(NBTTagCompound nbt) {
+		ticks.load(nbt);
 	}
 }

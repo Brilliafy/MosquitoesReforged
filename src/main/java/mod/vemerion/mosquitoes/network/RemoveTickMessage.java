@@ -1,24 +1,31 @@
 package mod.vemerion.mosquitoes.network;
 
-import java.util.function.Supplier;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkEvent;
+public class RemoveTickMessage implements IMessage {
 
-public class RemoveTickMessage {
-
-	public static void encode(final RemoveTickMessage msg, final PacketBuffer buffer) {
+	public RemoveTickMessage() {
 	}
 
-	public static RemoveTickMessage decode(final PacketBuffer buffer) {
-		return new RemoveTickMessage();
+	@Override
+	public void fromBytes(ByteBuf buf) {
 	}
 
-	public static void handle(final RemoveTickMessage msg, final Supplier<NetworkEvent.Context> supplier) {
-		final NetworkEvent.Context context = supplier.get();
-		context.setPacketHandled(true);
-		context.enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, ClientOnlyMethods::removeTick));
+	@Override
+	public void toBytes(ByteBuf buf) {
+	}
+
+	public static class Handler implements IMessageHandler<RemoveTickMessage, IMessage> {
+		@Override
+		public IMessage onMessage(RemoveTickMessage message, MessageContext ctx) {
+			Minecraft.getMinecraft().addScheduledTask(() -> {
+				ClientOnlyMethods.removeTick();
+			});
+			return null;
+		}
 	}
 }

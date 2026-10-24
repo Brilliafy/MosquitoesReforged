@@ -1,5 +1,6 @@
 {
     "variants": {
-        "": { "model": "mosquitoes:block/citronella_block" }
+        "normal": { "model": "mosquitoes:citronella_block" },
+        "": { "model": "mosquitoes:citronella_block" }
     }
-}                       
+}
