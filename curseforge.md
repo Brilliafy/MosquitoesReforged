@@ -1,10 +1,20 @@
+> ### 📜 Attribution & Open-Source License Notice
+> This project is a derivative work, 1.12.2 Forge downport, and gameplay overhaul of the original mod **[Mosquitoes! by vemerion](https://www.curseforge.com/minecraft/mc-mods/mosquitoes)**.
+> * **Original Mod Creator:** [vemerion](https://www.curseforge.com/members/vemerion/projects)
+> * **Original CurseForge Project:** [Mosquitoes! on CurseForge](https://www.curseforge.com/minecraft/mc-mods/mosquitoes)
+> * **Original Source Code:** [vemerion/Mosquitoes on GitHub](https://github.com/vemerion/Mosquitoes)
+> * **Original License:** **[MIT License (Open Source)](https://github.com/vemerion/Mosquitoes/blob/1.16/LICENSE.txt)** — explicitly permits free use, modification, distribution, merging, and publishing of derivative works.
+> * **Differences & Added Value:** Unlike the original 1.16+ mod (which only existed as a first-person HUD screen overlay mini-game), **Mosquitoes Reforged** is an extensive 1.12.2 port adding **physical 3D world entities** (`EntityMosquito` and `EntityTick`) with custom AI, leaping attacks, animal/villager host mounting and parasitism, 3-block radius physical swatter combat, world tick extraction with tweezers, and armor deflection mechanics.
+
+---
+
 # 🦟 Mosquitoes Reforged (1.12.2)
 
 > **"Just when you thought the wild was peaceful..."**
 
-**Mosquitoes Reforged** is a full-featured, expanded 1.12.2 Forge downport and overhaul of [vemerion's Mosquitoes](https://github.com/vemerion/Mosquitoes) mod.
+**Mosquitoes Reforged** is a full-featured, expanded 1.12.2 Forge downport and overhaul of [vemerion's Mosquitoes](https://www.curseforge.com/minecraft/mc-mods/mosquitoes) mod.
 
-While the original modern versions treated mosquitoes and ticks solely as a first-person screen mini-game, **Mosquitoes Reforged** reimagines them as **real, physical entities in the 3D Minecraft world** with leaping attacks, livestock parasitism, environmental spawning logic, and armor protection while still keeping the beloved first-person swatting mini-game fully intact!
+While the original modern versions treated mosquitoes and ticks solely as a first-person screen mini-game, **Mosquitoes Reforged** reimagines them as **real, physical entities in the 3D Minecraft world** with leaping attacks, livestock parasitism, environmental spawning logic, and armor protection—while still keeping the beloved first-person swatting mini-game fully intact!
 
 ---
 
@@ -102,4 +112,4 @@ While the original modern versions treated mosquitoes and ticks solely as a firs
 
 * **Modpacks**: You are 100% free to include **Mosquitoes Reforged** in any public or private modpack!
 * **Compatibility**: Works out of the box with standard Forge `14.23.5.2847+` and Cleanroom 1.12.2.
-* **Credits**: Original mod created by **vemerion** for 1.16. Ported and enhanced for 1.12.2 by **Brilliafy**.
+* **Credits & License**: Original mod created by **[vemerion](https://www.curseforge.com/members/vemerion/projects)** ([Mosquitoes! on CurseForge](https://www.curseforge.com/minecraft/mc-mods/mosquitoes)) under the **[MIT License](https://github.com/vemerion/Mosquitoes/blob/1.16/LICENSE.txt)**. Ported and enhanced for 1.12.2 by **[Brilliafy](https://github.com/Brilliafy)**.
