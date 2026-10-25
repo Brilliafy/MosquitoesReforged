@@ -71,19 +71,19 @@ While the original modern versions treated mosquitoes and ticks solely as a firs
 
 ## 🦟 Features & Mechanics
 
-### 🪰 1. Mosquitoes
+### 🪰 Mosquitoes
 * **Natural Spawning**: Swarms gather in swamps, near rivers and lakes, and emerge across surface biomes when dusk falls.
 * **Flight AI**: Flies chaotically with sudden darts and high-speed pursuits.
 * **Biting & Malaria**: Bypasses armor if it hits bare skin. Mosquitoes can infect players with **Malaria**, periodically triggering nausea, blindness, slowness, and poison.
 * **Defense**: Equip full armor to deflect bites, or craft a swatter!
 
-### 🕷️ 2. Ticks
+### 🕷️ Ticks
 * **Lurking in Foliage**: Ticks hide in bushes, ferns, and tall grass.
 * **Leaping Attack**: When prey approaches, ticks pounce through the air to latch onto their target!
 * **Parasitism**: If a tick touches you or an animal (cow, sheep, pig, horse, villager), it latches onto their skin/fur and drains blood.
 * **Removal**: Use your **Tick Tweezers** to safely pluck them off yourself, your friends, or your livestock.
 
-### 🌿 3. Citronella & Brewing
+### 🌿 Citronella & Brewing
 * **Citronella Flower**: Naturally generates across savannas, deserts, badlands, and mesas. Can be picked and replanted on sand, hardened clay, farmland, or grass.
 * **Citronella Oil**: Brew Citronella into Awkward Potions to produce **Citronella Oil** (20:00 or extended 40:00). Physical mosquitoes flee from protected players, and HUD swarms disperse immediately!
 * **Malaria Cure**: Brew a **Mosquito Wing** into an Awkward Potion to immediately cure the Malaria disease.
