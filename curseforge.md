@@ -4,7 +4,7 @@
 
 **Mosquitoes Reforged** is a full-featured, expanded 1.12.2 Forge downport and overhaul of [vemerion's Mosquitoes](https://github.com/vemerion/Mosquitoes) mod.
 
-While the original modern versions treated mosquitoes and ticks solely as a first-person screen mini-game, **Mosquitoes Reforged** reimagines them as **real, physical entities in the 3D Minecraft world** with leaping attacks, livestock parasitism, environmental spawning logic, and armor protection—while still keeping the beloved first-person swatting mini-game fully intact!
+While the original modern versions treated mosquitoes and ticks solely as a first-person screen mini-game, **Mosquitoes Reforged** reimagines them as **real, physical entities in the 3D Minecraft world** with leaping attacks, livestock parasitism, environmental spawning logic, and armor protection while still keeping the beloved first-person swatting mini-game fully intact!
 
 ---
 
