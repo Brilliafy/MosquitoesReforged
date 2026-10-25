@@ -5,9 +5,9 @@
 [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.12.2-blue.svg?style=for-the-badge&logo=curseforge)](https://www.curseforge.com/)
 [![Forge](https://img.shields.io/badge/Forge-14.23.5.2847+-orange.svg?style=for-the-badge)](https://files.minecraftforge.net/)
 [![Cleanroom](https://img.shields.io/badge/Cleanroom-Compatible-success.svg?style=for-the-badge)](https://github.com/CleanroomMC)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE.txt)
 
-**An expansive, highly optimized 1.12.2 Forge downport and overhaul of [vemerion's Mosquitoes](https://github.com/vemerion/Mosquitoes).**  
+**An expansive, highly optimized 1.12.2 Forge downport and overhaul of [vemerion's Mosquitoes](https://www.curseforge.com/minecraft/mc-mods/mosquitoes) ([GitHub](https://github.com/vemerion/Mosquitoes)).**  
 *Adds full physical world mobs, leaping ticks, mob bloodsucking, environmental rules, armor protection, seamless audio, and polished first-person interactions!*
 
 ---
@@ -140,6 +140,6 @@ Mosquito Swatter:                Tick Tweezers:
 
 ## 📜 Credits & License
 
-- **Original Creator**: [vemerion](https://github.com/vemerion) for the original [Mosquitoes](https://github.com/vemerion/Mosquitoes) concept, models, and audio.
+- **Original Creator**: [vemerion](https://github.com/vemerion) for the original [Mosquitoes](https://www.curseforge.com/minecraft/mc-mods/mosquitoes) ([GitHub](https://github.com/vemerion/Mosquitoes)) concept, models, and audio.
 - **Port & Overhaul**: Developed by [Brilliafy](https://github.com/Brilliafy).
-- **License**: MIT License. Feel free to use this in any modpack!
+- **License**: [MIT License](LICENSE.txt). Feel free to use this in any modpack!
